@@ -1,4 +1,4 @@
-package com.lin.boot.springbootstudy;
+package springbootstudy;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
