@@ -15,6 +15,7 @@
 
 #
 #application.properties
+ # properties配置文件在写中文的时候，会有乱码 ， 我们需要去IDEA中设置编码格式为UTF-8；
 #
 #语法结构 ：key=value
 #
@@ -53,3 +54,33 @@ pets:
 pets2: [cat,dog,pig]
 
 #yaml文件更强大的地方在于，他可以给我们的实体类直接注入匹配值！
+#  我们来使用yaml配置的方式进行注入
+
+person:
+  name: lin
+  age: 3
+  happy: false
+  birth: 2000/01/01
+  maps: {k1: v1,k2: v2}
+  lists:
+    - code
+    - girl
+    - music
+  dog:
+    name: 旺财
+    age: 1
+
+#配置文件还可以编写占位符生成随机数
+  person2:
+    name: qinjiang${random.uuid} # 随机uuid
+    age: ${random.int}  # 随机int
+    happy: false
+    birth: 2000/01/01
+    maps: { k1: v1,k2: v2 }
+    lists:
+      - code
+      - girl
+      - music
+    dog:
+      name: ${person.hello:other}_旺财
+      age: 1
