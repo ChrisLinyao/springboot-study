@@ -3,6 +3,7 @@ package springbootstudy.pojo;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.Date;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.Map;
 @Data
 @Component //注册bean到容器中
 @ConfigurationProperties(prefix = "person")//默认从全局配置文件中获取值
+@Validated //Springboot中可以用@Validated来校验数据，如果数据异常会统一抛出异常，方便异常中心统一处理。
 public class Person {
 
     private String name;
@@ -36,4 +38,5 @@ public class Person {
     private Map<String,Object> maps;
     private List<Object> lists;
     private Dog dog;
+    private String email;
 }
