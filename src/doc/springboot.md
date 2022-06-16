@@ -143,3 +143,224 @@ debug=true
 **Unconditional classes: （没有条件的类）**
 
 ![image-20220616142423788](images/image-20220616142423788.png)
+
+# 3.自定义starter
+
+## 3.1 基本
+
+启动器模块：是一个空jar文件，仅提供辅助性依赖管理，这些依赖可能用于自动装配或其他类库。
+
+命名规约：
+
+官方命名：
+
+- 前缀：spring-boot-starter-xxx
+- 比如：spring-boot-starter-web....
+
+自定义命名：
+
+- xxx-spring-boot-starter
+- 比如：mybatis-spring-boot-starter
+
+
+
+## 3.2编写启动器
+
+1. 在IDEA新建一个空项目: spring-boot-starter-diy
+
+2. 新建一个普通Maven模块: lin-spring-boot-starter
+
+3. 新建一个Springboot模块：lin-spring-boot-starter-autoconfigure
+
+   ![image-20220616183917199](images/image-20220616183917199.png)
+
+4. 在我们的 starter 中 导入  autoconfigure 的依赖！
+
+```xml
+
+<!-- 启动器 -->
+<dependencies>
+    <!--  引入自动配置模块 -->
+    <dependency>
+        <groupId>com.lin</groupId>
+        <artifactId>lin-spring-boot-starter-autoconfigure</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+</dependencies>
+```
+
+5.将 autoconfigure 项目下多余的文件都删掉，Pom中只留下一个 starter，这是所有的启动器基本配置！
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.7.0</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>com.lin</groupId>
+    <artifactId>lin-spring-boot-starter-autoconfigure</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>lin-spring-boot-starter-autoconfigure</name>
+    <description>Demo project for Spring Boot</description>
+    <properties>
+        <java.version>11</java.version>
+    </properties>
+<!--    将 autoconfigure 项目下多余的文件都删掉，Pom中只留下一个 starter，这是所有的启动器基本配置-->
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+    </dependencies>
+</project>
+
+```
+
+6.编写一个自己的服务
+
+```java
+package com.lin.linspringbootstarterautoconfigure;
+
+/**
+ * @projectName: springboot-starter-diy
+ * @package: com.lin.linspringbootstarterautoconfigure
+ * @className: HelloService
+ * @author: linyao
+ * @description: TODO
+ * @date: 2022/6/16 18:48
+ * @version: 1.0。0
+ */
+public class HelloService {
+
+	HelloProperties helloProperties;
+
+	public HelloProperties getHelloProperties() {
+		return helloProperties;
+	}
+
+	public void setHelloProperties(HelloProperties helloProperties) {
+		this.helloProperties = helloProperties;
+	}
+
+	public String sayHello(String name){
+		return helloProperties.getPrefix() + name + helloProperties.getSuffix();
+	}
+}
+
+```
+
+7.编写HelloProperties 配置类
+
+```java
+package com.lin.linspringbootstarterautoconfigure;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+/**
+ * @projectName: springboot-starter-diy
+ * @package: com.lin.linspringbootstarterautoconfigure
+ * @className: HelloProperties
+ * @author: linyao
+ * @description: TODO
+ * @date: 2022/6/16 18:48
+ * @version: 1.0。0
+ */
+
+// 前缀 lin.hello
+@ConfigurationProperties(prefix = "lin.hello")
+public class HelloProperties {
+
+	private String prefix;
+	private String suffix;
+
+	public String getPrefix() {
+		return prefix;
+	}
+
+	public void setPrefix(String prefix) {
+		this.prefix = prefix;
+	}
+
+	public String getSuffix() {
+		return suffix;
+	}
+
+	public void setSuffix(String suffix) {
+		this.suffix = suffix;
+	}
+}
+
+```
+
+8.编写我们的自动配置类并注入bean，测试！
+
+ ```java
+package com.lin.linspringbootstarterautoconfigure;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * @projectName: springboot-starter-diy
+ * @package: com.lin.linspringbootstarterautoconfigure
+ * @className: HelloServiceAutoConfiguration
+ * @author: linyao
+ * @description: TODO
+ * @date: 2022/6/16 18:50
+ * @version: 1.0。0
+ */
+@Configuration
+@ConditionalOnWebApplication //web应用生效
+@EnableConfigurationProperties(HelloProperties.class)
+public class HelloServiceAutoConfiguration {
+
+	@Autowired
+	HelloProperties helloProperties;
+
+	@Bean
+	public HelloService helloService() {
+		HelloService service = new HelloService();
+		service.setHelloProperties(helloProperties);
+		return service;
+	}
+}
+
+ ```
+
+9.在resources编写一个自己的 META-INF\spring.factories
+
+```yml
+# Auto Configure
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\com.lin.linspringbootstarterautoconfigure
+
+```
+
+10.编写完成后，可以安装到maven仓库中！
+
+![image-20220616192755767](images/image-20220616192755767.png)
+
+
+
+![image-20220616192826569](images/image-20220616192826569.png)
+
+![image-20220616193101589](images/image-20220616193101589.png)
+
+11.新建一个项目（springboot-study），导入我们自己写的启动器
+
+```xml
+        <dependency>
+            <groupId>com.lin</groupId>
+            <artifactId>lin-spring-boot-starter</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+```
+
+12.编写一个 HelloController  进行测试我们自己的写的接口！
